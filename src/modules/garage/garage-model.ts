@@ -1,5 +1,8 @@
 import { GarageModel, GarageDocument } from './garage-entity';
 
+// Re-export GarageModel para uso em outros módulos
+export { GarageModel, GarageDocument };
+
 export class GarageModelHandler {
     static async find(search: string, limit: number, page: number): Promise<{ garages: GarageDocument[], totalPages: number }> {
         const query = { name: { $regex: search, $options: 'i' } };

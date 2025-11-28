@@ -1,9 +1,14 @@
 import { Router } from 'express';
 import { statisticsController } from './statistics-controller';
 import { authMiddleware } from '../../core/middleware/auth-middleware';
+import { internalApiAuth } from '../../core/middleware/internal-api-auth';
 
 const router = Router();
 
+// Rota pública com autenticação interna (para Discord bot)
+router.get('/users-count', internalApiAuth, statisticsController.getUsersCount.bind(statisticsController));
+
+// Rotas protegidas com autenticação de usuário
 router.use(authMiddleware);
 
 router.get('/overview', statisticsController.getOverview.bind(statisticsController));

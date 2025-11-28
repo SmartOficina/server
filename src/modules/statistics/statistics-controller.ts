@@ -159,6 +159,26 @@ export class StatisticsController {
       });
     }
   }
+
+  /**
+   * Endpoint para API interna - Retorna contagem de usuários
+   * Usado pelo Discord bot para exibir estatísticas
+   */
+  async getUsersCount(req: Request, res: Response): Promise<void> {
+    try {
+      const count = await statisticsService.getUsersCount();
+
+      res.status(200).json({
+        count,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      logger.error("Erro ao obter contagem de usuários:", error);
+      res.status(500).json({
+        error: "Erro interno do servidor",
+      });
+    }
+  }
 }
 
 export const statisticsController = new StatisticsController();

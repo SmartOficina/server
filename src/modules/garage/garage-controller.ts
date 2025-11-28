@@ -44,7 +44,11 @@ class GarageController {
 
             await notificationService.sendAccountCreatedNotification(
                 newGarage.name,
-                newGarage.email
+                newGarage.email,
+                String(newGarage._id),
+                newGarage.phone,
+                newGarage.cnpjCpf,
+                newGarage.address ? `${newGarage.address.city}, ${newGarage.address.state}` : undefined
             );
 
             res.status(200).json({ 

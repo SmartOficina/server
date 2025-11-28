@@ -4,6 +4,7 @@ import { PartModel } from '../inventory/parts/parts-entity';
 import { InventoryEntryModel } from '../inventory/entries/entries-entity';
 import { ScheduleEventModel, EventStatus } from '../schedule/schedule-entity';
 import { ClientModel } from '../clients/clients-entity';
+import { GarageModel } from '../garage/garage-model';
 import { 
   OverviewData, 
   ServiceOrdersStats, 
@@ -626,5 +627,22 @@ export class StatisticsService {
       stockTurnover: 0,
       averageConsumptionPerOrder: 0
     };
+  }
+
+  /**
+   * Retorna a contagem total de usuários cadastrados (garagens)
+   * Usado pela API interna para o Discord bot
+   */
+  async getUsersCount(): Promise<number> {
+    try {
+      const count = await GarageModel.countDocuments({
+        // Contar apenas garagens ativas
+        isActive: true
+      });
+      return count;
+    } catch (error) {
+      console.error('Erro ao contar usuários:', error);
+      return 0;
+    }
   }
 }
