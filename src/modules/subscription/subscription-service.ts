@@ -79,6 +79,76 @@ class SubscriptionService {
     return subscription;
   }
 
+  static async createTrialSubscription(garageId: string, planId: string): Promise<SubscriptionDocument> {
+    const garage = await GarageService.findGarageById(garageId);
+    if (!garage) {
+      throw new Error("Garagem não encontrada.");
+    }
+
+    if (garage.trialUsed) {
+      throw new Error("Trial já foi utilizado para esta conta.");
+    }
+
+    const plan = await PlanService.getPlanById(planId);
+    if (!plan) {
+      throw new Error("Plano não encontrado.");
+    }
+
+    const TRIAL_DAYS = parseInt(process.env.TRIAL_DAYS || "7");
+
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + TRIAL_DAYS);
+
+    await SubscriptionModel.updateMany(
+      { garageId, status: SubscriptionStatus.ACTIVE },
+      {
+        status: SubscriptionStatus.CANCELED,
+        canceledAt: new Date(),
+        cancelReason: "Trial iniciado",
+        updatedAt: new Date(),
+      }
+    ).exec();
+
+    const subscription = new SubscriptionModel({
+      garageId,
+      planId,
+      startDate,
+      endDate,
+      status: SubscriptionStatus.ACTIVE,
+      paymentStatus: PaymentStatus.PAID,
+      paymentMethod: "trial",
+      paymentReference: "TRIAL",
+      planChangeType: PlanChangeType.NEW,
+      isTrial: true,
+      trialStartDate: startDate,
+      trialEndDate: endDate,
+      createdAt: new Date(),
+    });
+
+    await subscription.save();
+
+    await GarageModel.findByIdAndUpdate(garageId, {
+      trialUsed: true,
+      trialUsedAt: new Date(),
+      planId,
+      planExpiresAt: endDate,
+    });
+
+    logger.info(
+      {
+        subscriptionId: subscription._id,
+        garageId,
+        planId,
+        trialDays: TRIAL_DAYS,
+        endDate: endDate.toISOString(),
+      },
+      "Trial subscription criada"
+    );
+
+    return subscription;
+  }
+
   static async getActiveSubscription(garageId: string): Promise<SubscriptionDocument | null> {
     return SubscriptionModel.findOne({
       garageId,

@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface SubscriptionDocument extends Document {
   garageId: mongoose.Types.ObjectId;
@@ -22,48 +22,51 @@ export interface SubscriptionDocument extends Document {
   proRatedCredit?: number;
   planChangeType?: PlanChangeType;
   couponId?: mongoose.Types.ObjectId;
+  isTrial?: boolean;
+  trialStartDate?: Date;
+  trialEndDate?: Date;
 }
 
 export enum SubscriptionStatus {
-  ACTIVE = 'active',
-  CANCELED = 'canceled',
-  EXPIRED = 'expired',
-  PENDING = 'pending'
+  ACTIVE = "active",
+  CANCELED = "canceled",
+  EXPIRED = "expired",
+  PENDING = "pending",
 }
 
 export enum PaymentStatus {
-  PAID = 'paid',
-  PENDING = 'pending',
-  FAILED = 'failed',
-  REFUNDED = 'refunded'
+  PAID = "paid",
+  PENDING = "pending",
+  FAILED = "failed",
+  REFUNDED = "refunded",
 }
 
 export enum PlanChangeType {
-  UPGRADE = 'upgrade',
-  RENEWAL = 'renewal',
-  NEW = 'new'
+  UPGRADE = "upgrade",
+  RENEWAL = "renewal",
+  NEW = "new",
 }
 
 const SubscriptionSchema: Schema = new Schema({
-  garageId: { type: Schema.Types.ObjectId, ref: 'Garage', required: true },
-  planId: { type: Schema.Types.ObjectId, ref: 'Plan', required: true },
+  garageId: { type: Schema.Types.ObjectId, ref: "Garage", required: true },
+  planId: { type: Schema.Types.ObjectId, ref: "Plan", required: true },
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },
   status: {
     type: String,
     enum: Object.values(SubscriptionStatus),
     required: true,
-    default: SubscriptionStatus.PENDING
+    default: SubscriptionStatus.PENDING,
   },
   paymentStatus: {
     type: String,
     enum: Object.values(PaymentStatus),
     required: true,
-    default: PaymentStatus.PENDING
+    default: PaymentStatus.PENDING,
   },
   paymentMethod: { type: String, required: true },
   isRenewal: { type: Boolean, default: false },
-  previousSubscriptionId: { type: Schema.Types.ObjectId, ref: 'Subscription', required: false },
+  previousSubscriptionId: { type: Schema.Types.ObjectId, ref: "Subscription", required: false },
   renewalCount: { type: Number, default: 0 },
   paymentReference: { type: String, required: false },
   invoiceNumber: { type: String, required: false },
@@ -72,17 +75,21 @@ const SubscriptionSchema: Schema = new Schema({
   createdAt: { type: Date, default: Date.now, required: true },
   updatedAt: { type: Date, required: false },
 
-  previousPlanId: { type: Schema.Types.ObjectId, ref: 'Plan', required: false },
+  previousPlanId: { type: Schema.Types.ObjectId, ref: "Plan", required: false },
   proRatedCredit: { type: Number, required: false },
   planChangeType: {
     type: String,
     enum: Object.values(PlanChangeType),
-    required: false
+    required: false,
   },
-  couponId: { type: Schema.Types.ObjectId, ref: 'Coupon', required: false }
+  couponId: { type: Schema.Types.ObjectId, ref: "Coupon", required: false },
+
+  isTrial: { type: Boolean, default: false, required: false },
+  trialStartDate: { type: Date, required: false },
+  trialEndDate: { type: Date, required: false },
 });
 
 SubscriptionSchema.index({ garageId: 1, status: 1 });
 SubscriptionSchema.index({ endDate: 1, status: 1 });
 
-export const SubscriptionModel = mongoose.model<SubscriptionDocument>('Subscription', SubscriptionSchema);
+export const SubscriptionModel = mongoose.model<SubscriptionDocument>("Subscription", SubscriptionSchema);
